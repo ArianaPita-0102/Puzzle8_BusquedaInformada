@@ -1,0 +1,4 @@
+codicioso    | nodos_expandidos   | chi2=   5282.48 | p=0.000e+00 | SIGNIFICATIVO
+codicioso    | tiempo_ms          | chi2=   4030.11 | p=0.000e+00 | SIGNIFICATIVO
+a_estrella   | nodos_expandidos   | chi2=   6968.58 | p=0.000e+00 | SIGNIFICATIVO
+a_estrella   | tiempo_ms          | chi2=   6132.05 | p=0.000e+00 | SIGNIFICATIVO
