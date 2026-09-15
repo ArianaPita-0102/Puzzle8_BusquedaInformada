@@ -1,21 +1,3 @@
-"""
-Ajusta un modelo de crecimiento a los nodos expandidos en función de N,
-usando los resultados de escalabilidad.py (solo instancias resueltas,
-las que dieron timeout no reflejan el costo real).
-
-Prueba dos modelos, como pide la consigna:
-  Exponencial:  nodos(N) ≈ a * b^N
-  Potencial:    nodos(N) ≈ a * N^c
-
-Ambos se ajustan por regresión lineal tras aplicar logaritmo:
-  log(nodos) = log(a) + N*log(b)      (exponencial)
-  log(nodos) = log(a) + c*log(N)      (potencial)
-y se compara el R² de cada uno para decidir cuál describe mejor los datos.
-
-Uso (desde la carpeta raíz del proyecto):
-    python experimentos/modelar_crecimiento.py
-"""
-
 import argparse
 import csv
 import os
@@ -30,9 +12,7 @@ _CSV_DEFAULT = os.path.join(_RESULTADOS_DIR, "resultados_escalabilidad.csv")
 _GRAFICO_DEFAULT = os.path.join(_RESULTADOS_DIR, "crecimiento_nodos_vs_n.png")
 
 
-UMBRAL_EXITO_PARA_AJUSTE = 0.5  # excluir del ajuste los N donde casi nadie llegó a tiempo:
-# esos "sobrevivientes" son casi siempre las instancias más fáciles de ese N, así que
-# su mediana queda artificialmente baja y arruina el ajuste (sesgo de supervivencia).
+UMBRAL_EXITO_PARA_AJUSTE = 0.5
 
 
 def cargar_medianas(csv_path):
@@ -73,7 +53,6 @@ def r_cuadrado(y_real, y_pred):
 
 
 def ajustar_exponencial(ns, medianas):
-    # log(nodos) = log(a) + N*log(b)  -> regresión lineal de log(nodos) vs N
     log_y = np.log(medianas)
     pendiente, intercepto = np.polyfit(ns, log_y, 1)
     a = np.exp(intercepto)
@@ -84,7 +63,6 @@ def ajustar_exponencial(ns, medianas):
 
 
 def ajustar_potencial(ns, medianas):
-    # log(nodos) = log(a) + c*log(N)  -> regresión lineal de log(nodos) vs log(N)
     log_y = np.log(medianas)
     log_x = np.log(ns)
     c, intercepto = np.polyfit(log_x, log_y, 1)
