@@ -1,20 +1,3 @@
-"""
-Juego del Puzzle-N (deslizante) en pygame, para la Parte 4 de la
-práctica. El tamaño del tablero funciona como nivel de dificultad, y
-hay un "asistente" que resuelve el rompecabezas usando A* en vivo,
-reutilizando exactamente el mismo código de búsqueda de las Partes 2-4
-(rkn_informado.py / AgenteBuscadorInformado / AgenteRKN).
-
-Controles:
-  - Clic en una ficha adyacente al espacio vacío -> la mueve.
-  - Botón "Asistente" -> A* resuelve y anima la solución automáticamente.
-  - Botón "Barajar" -> genera un tablero nuevo (siempre soluble).
-  - Botón "Menú" -> vuelve a elegir dificultad.
-
-Ejecutar (desde la carpeta raíz del proyecto):
-    python juego/juego_puzzle.py
-"""
-
 import os
 import random
 import sys
@@ -24,51 +7,28 @@ _AQUI = os.path.dirname(os.path.abspath(__file__))
 _RAIZ_PROYECTO = os.path.dirname(_AQUI)
 if _RAIZ_PROYECTO not in sys.path:
     sys.path.insert(0, _RAIZ_PROYECTO)
-# Bootstrap para poder ejecutar este script directamente
-# (python carpeta/archivo.py) sin instalar el proyecto como paquete.
 
 import pygame
 
-# Evita que Windows escale la ventana de forma rara cuando el "zoom"
-# de pantalla no es 100% (125%, 150%, etc.). Tiene que fijarse ANTES
-# de pygame.init().
 if sys.platform == "win32":
     os.environ["SDL_WINDOWS_DPI_AWARENESS"] = "permonitorv2"
 
 from busqueda.rkn_informado import RKNInformado
 from experimentos.generar_instancias_n import estado_meta
 
-# ------------------------------------------------------------------
-# Configuración general
-# ------------------------------------------------------------------
 TAMANO_FICHA = 100
 ALTO_HEADER = 150
 FPS = 60
 
-# La ventana tiene un tamaño FIJO durante toda la ejecución del juego
-# -- nunca se vuelve a llamar pygame.display.set_mode() después de
-# main(). Antes la ventana cambiaba de tamaño según N (3x3, 4x4, 5x5)
-# y al volver al menú, lo que desalineaba los clicks respecto a los
-# botones (un clic en cualquier lado terminaba "cayendo" sobre algún
-# botón viejo). Con tamaño fijo ese problema no puede volver a pasar,
-# sea cual sea el N elegido: los tableros más chicos simplemente se
-# centran dentro de la misma ventana.
 ANCHO_VENTANA = 650
-ALTO_VENTANA = ALTO_HEADER + TAMANO_FICHA * 5 + 90  # alcanza para N=5, el más grande
+ALTO_VENTANA = ALTO_HEADER + TAMANO_FICHA * 5 + 90
 
 DIFICULTADES = [
     ("Fácil (3x3)", 3, 25),
     ("Medio (4x4)", 4, 30),
     ("Difícil (5x5)", 5, 30),
-]  # (etiqueta, N, longitud de la caminata de barajado)
-# Estos valores son más chicos que los usados en escalabilidad.py (Parte
-# 4) a propósito: ahí queríamos ENCONTRAR el límite de A* con instancias
-# bien difíciles; acá queremos que el juego sea DIVERTIDO y que el
-# asistente responda rápido casi siempre.
+]
 
-# Límite de seguridad para el asistente: aun con caminatas cortas, por
-# si el jugador mueve fichas manualmente hacia una configuración más
-# difícil antes de pedir ayuda.
 LIMITE_NODOS_ASISTENTE = 400_000
 LIMITE_TIEMPO_ASISTENTE_S = 35
 
@@ -85,9 +45,6 @@ COLOR_GANASTE = (250, 210, 50)
 
 
 def generar_tablero_barajado(n, longitud_caminata, rng):
-    """Arranca en la meta y aplica movimientos válidos al azar (evitando
-    deshacer el paso anterior), igual que en escalabilidad.py. Así el
-    tablero siempre es soluble por construcción."""
     agente = RKNInformado(n=n, heuristica="h2")
     meta = estado_meta(n)
     agente.set_estado_meta(meta)
@@ -113,31 +70,13 @@ def generar_tablero_barajado(n, longitud_caminata, rng):
 
 
 def resolver_con_asistente(n, estado_actual, meta):
-    """Corre A* con distancia Manhattan (h2) desde el estado actual.
-
-    Devuelve (pasos, motivo_timeout):
-      - pasos: lista de tableros de la solución (vacía si no se encontró).
-      - motivo_timeout: None si encontró solución; si no, "nodos" o
-        "tiempo" según cuál límite se alcanzó primero (viene directo
-        de rendimiento["timeout"], que agente_buscador_informado.py ya
-        calcula). Sirve para poder avisarle al jugador la razón real
-        en vez de un genérico "no encontró solución", que sería
-        engañoso: todo estado alcanzable jugando SIEMPRE es soluble
-        (los movimientos preservan la solubilidad), así que si no se
-        encontró solución es 100% porque se cortó por presupuesto, no
-        porque el estado sea irresoluble.
-
-    Se usa h2 (no h5) porque el puzzle generalizado a NxN
-    (agente_rkn.py) no implementa Pattern Database — ver la
-    justificación en ese archivo.
-    """
     agente = RKNInformado(n=n, heuristica="h2")
     agente.set_estado_meta(meta)
     agente.set_estado_inicial(estado_actual)
     agente.set_tecnica("a_estrella")
     agente.set_limites(nodos=LIMITE_NODOS_ASISTENTE, tiempo_s=LIMITE_TIEMPO_ASISTENTE_S)
     agente.programa()
-    pasos = agente.get_acciones()  # lista de tableros, del inicial al final
+    pasos = agente.get_acciones()
     motivo_timeout = agente.get_medida_rendimiento().get("timeout")
     return pasos, motivo_timeout
 
@@ -151,8 +90,6 @@ def pos_blanco(estado):
 
 
 def mover_si_valido(estado, fila_click, col_click):
-    """Si la celda clickeada es adyacente al blanco, intercambia y
-    devuelve el nuevo estado; si no, devuelve el mismo estado."""
     fi, fj = pos_blanco(estado)
     if abs(fi - fila_click) + abs(fj - col_click) == 1:
         nuevo = [f[:] for f in estado]
@@ -212,9 +149,6 @@ def pantalla_menu(pantalla, fuente_grande, fuente):
 
 
 def jugar(pantalla, fuente_grande, fuente, n, longitud_caminata):
-    # OJO: ya NO se llama a pygame.display.set_mode() acá. La ventana
-    # mantiene el tamaño fijo (ANCHO_VENTANA x ALTO_VENTANA) de main();
-    # tableros más chicos que 5x5 se centran horizontalmente adentro.
     ancho_tablero = TAMANO_FICHA * n
     offset_x = (ANCHO_VENTANA - ancho_tablero) // 2
 
@@ -223,13 +157,11 @@ def jugar(pantalla, fuente_grande, fuente, n, longitud_caminata):
     estado = generar_tablero_barajado(n, longitud_caminata, rng)
 
     movimientos_totales = 0
-    uso_asistente = False  # solo indica SI se usó, no un número separado --
-    # así nunca puede haber dos números distintos en pantalla al mismo tiempo.
+    uso_asistente = False
     tiempo_inicio = time.time()
     tiempo_final = None
     ganado = False
 
-    # Animación del asistente
     animacion_pasos = None
     indice_animacion = 0
     ultimo_paso_tiempo = 0
@@ -271,12 +203,6 @@ def jugar(pantalla, fuente_grande, fuente, n, longitud_caminata):
 
                     pasos, motivo_timeout = resolver_con_asistente(n, estado, meta)
                     if not pasos or pasos[-1] != meta:
-                        # Todo estado alcanzado jugando es soluble por
-                        # construcción (los movimientos preservan la
-                        # solubilidad); si no hay pasos es porque se
-                        # agotó el presupuesto de nodos o de tiempo,
-                        # no porque el estado sea irresoluble. Avisamos
-                        # cuál de los dos límites fue.
                         if motivo_timeout == "nodos":
                             mensaje_estado = (
                                 f"El asistente alcanzó el límite de "
@@ -316,7 +242,6 @@ def jugar(pantalla, fuente_grande, fuente, n, longitud_caminata):
                                     ganado = True
                                     tiempo_final = time.time() - tiempo_inicio
 
-        # Animación del asistente: avanza un paso cada INTERVALO_ANIMACION_MS
         if animacion_pasos is not None:
             ahora = pygame.time.get_ticks()
             if ahora - ultimo_paso_tiempo >= INTERVALO_ANIMACION_MS:
@@ -331,12 +256,8 @@ def jugar(pantalla, fuente_grande, fuente, n, longitud_caminata):
                     mensaje_estado = ""
                 else:
                     estado = animacion_pasos[indice_animacion]
-                    movimientos_totales += 1  # un movimiento real = pasar de
-                    # un estado al siguiente; la última vuelta del loop solo
-                    # detecta el final y no mueve ninguna ficha, así que no
-                    # debe contar (antes sumaba uno de más).
+                    movimientos_totales += 1
 
-        # --- Dibujo ---
         pantalla.fill(COLOR_FONDO)
 
         boton_asistente.dibujar(pantalla, fuente, mouse_pos)
@@ -388,9 +309,6 @@ def jugar(pantalla, fuente_grande, fuente, n, longitud_caminata):
 def main():
     pygame.init()
     pygame.display.set_caption("Puzzle-N — Proyecto IA")
-    # Único lugar de todo el programa donde se fija el tamaño de
-    # ventana -- nunca se vuelve a tocar. Esto es lo que elimina el
-    # bug de clicks desalineados de raíz.
     pantalla = pygame.display.set_mode((ANCHO_VENTANA, ALTO_VENTANA))
     fuente_grande = pygame.font.SysFont("arial", 40, bold=True)
     fuente = pygame.font.SysFont("arial", 22)
