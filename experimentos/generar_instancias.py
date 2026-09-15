@@ -1,15 +1,3 @@
-"""
-Genera N configuraciones iniciales aleatorias y SOLUBLES del Puzzle-8,
-y las guarda en un JSON para que todas las heurísticas y algoritmos del
-Experimento 1 se corran exactamente sobre las mismas instancias (esto es
-clave para que la prueba de Friedman tenga sentido: necesita que cada
-"bloque" -instancia- reciba los mismos tratamientos).
-
-Regla de solubilidad para un tablero 3x3 (ancho impar):
-Una permutación de las 8 fichas (ignorando el blanco) es soluble hacia
-la meta ordenada 1..8 si y solo si su número de inversiones es PAR.
-"""
-
 import json
 import os
 import random
@@ -40,7 +28,7 @@ def plano_a_tablero(plano):
 
 
 def generar_una_instancia_soluble(rng):
-    plano = list(range(9))  # 0..8, 0 = blanco
+    plano = list(range(9))
     while True:
         rng.shuffle(plano)
         if es_soluble(plano):
@@ -55,7 +43,7 @@ def generar_instancias(n, semilla=42):
         tablero = generar_una_instancia_soluble(rng)
         clave = tuple(tuple(f) for f in tablero)
         if clave in vistos:
-            continue  # evita duplicados exactos entre las N instancias
+            continue
         vistos.add(clave)
         instancias.append(tablero)
     return instancias
@@ -65,8 +53,6 @@ if __name__ == "__main__":
     N = 1000
     instancias = generar_instancias(N, semilla=42)
 
-    # Sanity check rápido: contar cuántas instancias distintas hay en total
-    # solucionables para 3x3 (deberia ser <= 181440, la mitad de 9!).
     print(f"Generadas {len(instancias)} instancias únicas y solubles.")
     print("Ejemplo de instancia 0:", instancias[0])
 
