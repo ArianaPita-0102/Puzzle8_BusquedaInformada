@@ -5,8 +5,6 @@ from collections import deque
 
 class AgenteRK8(AgenteBuscador):
 
-    # Nombres válidos que se pueden pasar a set_heuristica().
-    # A medida que avancemos en el plan, cada uno se irá completando.
     HEURISTICAS_DISPONIBLES = ("h1", "h2", "h3", "h4", "h5", "h6")
 
     def __init__(self, heuristica="h2", w=0.5):
@@ -17,15 +15,10 @@ class AgenteRK8(AgenteBuscador):
         self.add_funcion(self.derecha)
 
         self.set_heuristica(heuristica)
-        self.w = w  # peso usado únicamente por h6
+        self.w = w
 
-        # Cache de la Pattern Database para h5 (se calculará una sola vez,
-        # la primera vez que se necesite, en el paso 5 del plan).
         self._pdb = None
 
-    # ------------------------------------------------------------------
-    # Configuración de la heurística activa
-    # ------------------------------------------------------------------
     def set_heuristica(self, nombre):
         if nombre not in self.HEURISTICAS_DISPONIBLES:
             raise ValueError(
@@ -37,9 +30,6 @@ class AgenteRK8(AgenteBuscador):
     def get_heuristica_activa(self):
         return self.__heuristica
 
-    # ------------------------------------------------------------------
-    # Costo y movimientos (sin cambios respecto al código original)
-    # ------------------------------------------------------------------
     def get_costo(self, tup):
         return len(tup)
 
@@ -89,10 +79,6 @@ class AgenteRK8(AgenteBuscador):
         else:
             return None
 
-    # ------------------------------------------------------------------
-    # Utilidad común: posición meta de cada ficha, para no recalcularla
-    # dentro de cada heurística.
-    # ------------------------------------------------------------------
     def _posiciones_meta(self):
         meta = self.get_estado_meta()
         posiciones = {}
@@ -101,19 +87,11 @@ class AgenteRK8(AgenteBuscador):
                 posiciones[meta[x][y]] = (x, y)
         return posiciones
 
-    # ------------------------------------------------------------------
-    # Despachador de heurística: get_heuristica(camino) sigue teniendo
-    # la misma firma que antes (la usa AgenteBuscador para A*/Codicioso),
-    # pero ahora delega en el método hX correspondiente.
-    # ------------------------------------------------------------------
     def get_heuristica(self, camino):
         estado = camino[-1]
         metodo = getattr(self, self.__heuristica)
         return metodo(estado)
 
-    # ------------------------------------------------------------------
-    # H1 — Fichas mal colocadas (Hamming)
-    # ------------------------------------------------------------------
     def h1(self, estado):
         meta = self.get_estado_meta()
         mal_colocadas = 0
@@ -124,9 +102,6 @@ class AgenteRK8(AgenteBuscador):
                     mal_colocadas += 1
         return mal_colocadas
 
-    # ------------------------------------------------------------------
-    # H2 — Distancia Manhattan
-    # ------------------------------------------------------------------
     def h2(self, estado):
         posiciones_meta = self._posiciones_meta()
         distancia = 0
@@ -138,17 +113,10 @@ class AgenteRK8(AgenteBuscador):
                     distancia += abs(i - x) + abs(j - y)
         return distancia
 
-    # ------------------------------------------------------------------
-    # H3 — Manhattan + Conflicto Lineal
-    # ------------------------------------------------------------------
     def h3(self, estado):
         return self.h2(estado) + 2 * self._conflicto_lineal(estado)
 
     def _conflicto_lineal(self, estado):
-        """Cuenta, para cada fila y columna, el número mínimo de fichas
-        que deben abandonar esa línea para eliminar todos los conflictos
-        (no es simplemente la cantidad de pares invertidos: si 3 fichas
-        están todas cruzadas entre sí, basta con sacar 2, no 3)."""
         posiciones_meta = self._posiciones_meta()
         conflictos = 0
 
@@ -175,10 +143,6 @@ class AgenteRK8(AgenteBuscador):
         return conflictos
 
     def _contar_conflictos_en_linea(self, elementos):
-        """elementos: lista de (posicion_actual_en_la_linea, posicion_meta_en_la_linea).
-        Construye el grafo de pares invertidos y remueve, de forma
-        golosa, el vértice de mayor grado hasta que no quedan conflictos.
-        Con líneas de tamaño 3 esto coincide con el óptimo (n - LIS)."""
         n = len(elementos)
         vecinos = [set() for _ in range(n)]
         for a in range(n):
@@ -203,20 +167,11 @@ class AgenteRK8(AgenteBuscador):
             removidos += 1
         return removidos
 
-    # ------------------------------------------------------------------
-    # H4 — Manhattan + Conflicto Lineal + Penalización de Esquinas
-    # ------------------------------------------------------------------
     def h4(self, estado):
         return self.h3(estado) + self._penalizacion_esquinas(estado)
 
     def _penalizacion_esquinas(self, estado):
-        """Penaliza fichas de esquina (su meta es una esquina con ficha,
-        no la esquina donde vive el blanco) que están en una esquina
-        distinta a la suya, cuando el espacio vacío no está en la
-        esquina diagonalmente opuesta a esa mala ubicación."""
         posiciones_meta = self._posiciones_meta()
-        # (2,2) es la esquina "casa" del blanco en la meta: no es una
-        # ficha de esquina real, así que no la evaluamos como tal.
         esquinas_con_ficha = [(0, 0), (0, 2), (2, 0)]
         opuesta = {(0, 0): (2, 2), (0, 2): (2, 0), (2, 0): (0, 2)}
         blanco = self.pos(estado)
@@ -231,9 +186,6 @@ class AgenteRK8(AgenteBuscador):
                     penalizacion += 1
         return penalizacion
 
-    # ------------------------------------------------------------------
-    # H5 — Base de patrones (Pattern Database)
-    # ------------------------------------------------------------------
     def h5(self, estado):
         if self._pdb is None:
             self._pdb = {
@@ -246,15 +198,10 @@ class AgenteRK8(AgenteBuscador):
         return total
 
     def _abstraer(self, estado, grupo):
-        """Colapsa a -1 las fichas que no pertenecen al grupo, dejando
-        visibles solo el blanco (0) y las fichas del grupo."""
         plano = [estado[i][j] for i in range(3) for j in range(3)]
         return tuple(v if (v == 0 or v in grupo) else -1 for v in plano)
 
     def _construir_pdb(self, grupo):
-        """BFS 0-1 desde la meta abstracta: mover el blanco sobre una
-        ficha del grupo cuesta 1 (movimiento real), mover el blanco
-        sobre una ficha ajena (-1) cuesta 0 (no afecta a este grupo)."""
         meta_abs = self._abstraer(self.get_estado_meta(), grupo)
         dist = {meta_abs: 0}
         dq = deque([meta_abs])
@@ -280,9 +227,6 @@ class AgenteRK8(AgenteBuscador):
                             dq.append(nuevo)
         return dist
 
-    # ------------------------------------------------------------------
-    # H6 — Combinación con peso variable
-    # ------------------------------------------------------------------
     def h6(self, estado):
         return self.w * self.h2(estado) + (1 - self.w) * self.h1(estado)
 

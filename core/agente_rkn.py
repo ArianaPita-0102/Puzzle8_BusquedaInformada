@@ -1,22 +1,3 @@
-"""
-Generalización del Puzzle-8 a tableros N x N (15-puzzle, 24-puzzle, etc.)
-Extiende la misma AgenteBuscador real del proyecto, igual que AgenteRK8,
-para poder combinarla con AgenteBuscadorInformado (Codicioso/A*) sin
-cambiar nada de esa parte.
-
-Heurísticas generalizadas:
-  h1: fichas mal colocadas (Hamming) — admisible para cualquier N.
-  h2: distancia Manhattan — admisible y consistente para cualquier N.
-
-No se generaliza H5 (Pattern Database) acá: para tableros grandes
-requeriría rediseñar la partición de grupos de fichas para cada N, lo
-cual excede el alcance de esta parte (queda como posible extensión /
-trabajo futuro a mencionar en el informe). H2 es la heurística más
-fuerte que se generaliza de forma directa y sigue siendo admisible y
-consistente para cualquier tamaño, por eso es la que se usa en el
-Experimento 2 de escalabilidad.
-"""
-
 from copy import deepcopy
 from AgenteIA.AgenteBuscador import AgenteBuscador
 

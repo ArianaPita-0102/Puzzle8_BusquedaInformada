@@ -1,20 +1,3 @@
-"""
-Análisis Estadístico Formal (Parte 3).
-
-Lee resultados_experimento1.csv y genera:
-  1. Estadísticas descriptivas + IC 95% por algoritmo-heurística-métrica.
-  2. Prueba de Friedman (por algoritmo, sobre nodos_expandidos y tiempo_ms).
-  3. Post-hoc de Nemenyi si Friedman da significativo.
-  4. Ranking compuesto de heurísticas.
-  5. Gráficos: boxplots y barras con IC 95%.
-
-Requiere: pandas, numpy, scipy, scikit-posthocs, matplotlib.
-Si falta scikit-posthocs:  pip install scikit-posthocs
-
-Uso (desde la carpeta raíz del proyecto):
-    python experimentos/analisis_estadistico.py
-"""
-
 import argparse
 import os
 import warnings
@@ -74,11 +57,9 @@ def estadisticas_descriptivas(df, metricas):
 
 
 def tabla_por_instancia(df, algoritmo, metrica):
-    """Pivotea a instancia_id x heurística, para Friedman y Nemenyi
-    (cada instancia es un 'bloque' que recibe las 8 heurísticas)."""
     sub = df[df["algoritmo"] == algoritmo]
     tabla = sub.pivot(index="instancia_id", columns="heuristica", values=metrica)
-    return tabla[ORDEN_HEURISTICAS]  # orden fijo de columnas
+    return tabla[ORDEN_HEURISTICAS]
 
 
 def prueba_friedman(tabla):
@@ -92,8 +73,6 @@ def posthoc_nemenyi(tabla):
 
 
 def ranking_compuesto(df):
-    """Para cada algoritmo, rankea las heurísticas por mediana de nodos,
-    tiempo y memoria (menor=mejor) y promedia los 3 rangos."""
     resultados = []
     for algoritmo, grupo in df.groupby("algoritmo"):
         medianas = grupo.groupby("heuristica", observed=True).agg(
@@ -101,7 +80,7 @@ def ranking_compuesto(df):
             tiempo_ms=("tiempo_ms", "median"),
             memoria_max=("memoria_max", "median"),
         )
-        rangos = medianas.rank(method="average")  # 1 = mejor (menor valor)
+        rangos = medianas.rank(method="average")
         rango_compuesto = rangos.mean(axis=1).sort_values()
         for heuristica, valor in rango_compuesto.items():
             resultados.append({
@@ -146,7 +125,6 @@ def main(csv_path):
     df = cargar(csv_path)
     metricas_desc = ["pasos", "tiempo_ms", "nodos_expandidos", "nodos_generados", "memoria_max"]
 
-    # 1. Estadísticas descriptivas
     os.makedirs(_RESULTADOS_DIR, exist_ok=True)
 
     desc = estadisticas_descriptivas(df, metricas_desc)
@@ -154,7 +132,6 @@ def main(csv_path):
     desc.to_csv(ruta_desc, index=False)
     print(f"Guardado: {ruta_desc}")
 
-    # 2 y 3. Friedman + post-hoc, por algoritmo y por métrica
     lineas_friedman = []
     for algoritmo in df["algoritmo"].unique():
         for metrica in METRICAS_FRIEDMAN:
@@ -180,14 +157,12 @@ def main(csv_path):
         f.write("\n".join(lineas_friedman))
     print(f"Guardado: {ruta_friedman}")
 
-    # 4. Ranking compuesto
     ranking = ranking_compuesto(df)
     ruta_ranking = os.path.join(_RESULTADOS_DIR, "ranking_compuesto.csv")
     ranking.to_csv(ruta_ranking, index=False)
     print(f"Guardado: {ruta_ranking}")
     print(ranking.to_string(index=False))
 
-    # 5. Gráficos
     for algoritmo in df["algoritmo"].unique():
         graficar_boxplot(df, "nodos_expandidos", algoritmo, os.path.join(_RESULTADOS_DIR, f"boxplot_nodos_{algoritmo}.png"))
         graficar_boxplot(df, "tiempo_ms", algoritmo, os.path.join(_RESULTADOS_DIR, f"boxplot_tiempo_{algoritmo}.png"))

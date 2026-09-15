@@ -1,17 +1,3 @@
-"""
-Genera configuraciones iniciales aleatorias y solubles para un
-Puzzle-N (tablero N x N), donde la meta es 1..N²-1 seguido del 0
-en la última celda.
-
-Regla de solubilidad (resultado clásico de teoría de grupos):
-- Si N es IMPAR: soluble si el número de inversiones es PAR.
-- Si N es PAR: soluble si (inversiones + fila_del_blanco_desde_abajo,
-  contando desde 1) es IMPAR.
-
-Para N=3 esto coincide exactamente con la regla que ya usamos en
-generar_instancias.py (caso impar).
-"""
-
 import random
 
 
@@ -31,8 +17,8 @@ def es_soluble(plano, n):
     if n % 2 == 1:
         return inversiones % 2 == 0
     else:
-        fila_blanco_idx = plano.index(0) // n          # 0-indexada desde arriba
-        fila_desde_abajo = n - fila_blanco_idx          # 1-indexada desde abajo
+        fila_blanco_idx = plano.index(0) // n
+        fila_desde_abajo = n - fila_blanco_idx
         return (inversiones + fila_desde_abajo) % 2 == 1
 
 
@@ -54,10 +40,10 @@ def generar_una_instancia_soluble(n, rng):
 
 
 def generar_instancias_n(n, cantidad, semilla=42):
-    rng = random.Random(semilla + n)  # semilla distinta por tamaño, reproducible
+    rng = random.Random(semilla + n)
     instancias = []
     vistos = set()
-    intentos_maximos = cantidad * 50  # margen de seguridad contra duplicados
+    intentos_maximos = cantidad * 50
     intentos = 0
     while len(instancias) < cantidad and intentos < intentos_maximos:
         intentos += 1
