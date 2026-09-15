@@ -13,18 +13,20 @@
 \usepackage{caption}
 \usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
 
-% Las imágenes viven en experimentos/resultados/ (no se duplican acá para
-% no tener dos copias del mismo archivo si se vuelven a correr los
-% experimentos). Este .tex está en documentos/, un nivel por debajo de
-% la raíz del proyecto.
 \graphicspath{{../experimentos/resultados/}}
 
 \newcommand{\Hh}[1]{\texttt{#1}}
 
 \title{\textbf{Estudio Comparativo de Heurísticas, Algoritmo Codicioso\\
 y A* en el Puzzle-8 y sus Generalizaciones}}
-\author{Nazaret Claure \and Igor Pereira \and Ariana Pita \and Maria Sandoval}
+\author{
+Asignatura: Inteligencia Artificial \\
+Docente: Msc. Víctor Rodríguez Estévez \\[0.5em]
+\parbox{0.9\textwidth}{\centering\itshape Integrantes del grupo: Nazaret Fabianne Claure Martinez, Igor Alfredo Pereira Rosado, Ariana Aylen Pita Vargas, Maria Jose Sandoval Orellana}
+}
 \date{Septiembre de 2026}
+
+
 
 \begin{document}
 
@@ -581,10 +583,19 @@ se alcanzó --- nunca se reporta como ``sin solución'', ya que todo estado
 alcanzable jugando es soluble por construcción (los movimientos preservan la
 solubilidad).
 
-% TODO (equipo): agregar acá una o dos capturas de pantalla reales del juego
-% (pantalla de selección de dificultad y tablero en juego), por ejemplo:
-% \includegraphics[width=0.6\textwidth]{../../capturas/menu.png}
-% \includegraphics[width=0.6\textwidth]{../../capturas/tablero.png}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\textwidth]{../juego/capturas/menu.png}
+\caption{Pantalla de selección de dificultad del juego.}
+\label{fig:juego-menu}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\textwidth]{../juego/capturas/tablero.png}
+\caption{Tablero de juego en curso.}
+\label{fig:juego-tablero}
+\end{figure}
 
 \section{Limitaciones}
 \begin{itemize}
@@ -601,8 +612,6 @@ $N\times N$.
 \item El Experimento 2 se corrió con 30 instancias por tamaño y un límite de
 60 segundos; con más instancias o un límite mayor, la tasa de éxito estimada
 para $N=5$ (exactamente 50\,\% con esta muestra) podría variar.
-\item Faltan capturas de pantalla reales del juego en este informe (ver nota
-en la Sección anterior).
 \end{itemize}
 
 \section{Conclusión}
