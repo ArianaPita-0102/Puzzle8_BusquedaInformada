@@ -1,19 +1,3 @@
-"""
-Experimento 1: Comparación de Heurísticas en Puzzle-8.
-
-Corre Codicioso y A* con H1, H2, H3, H4, H5 y H6 (con w=0.3, 0.6, 1.0)
-sobre las mismas 1000 instancias (generadas por generar_instancias.py) y
-exporta todas las métricas a resultados_experimento1.csv.
-
-Usa RK8Informado (AgenteBuscadorInformado + AgenteRK8), que extiende de
-verdad la clase AgenteIA.AgenteBuscador del proyecto agregando las
-técnicas "codicioso" y "a_estrella".
-
-Uso:
-    python experimentos/experimento1.py                # corre las 1000 instancias
-    python experimentos/experimento1.py --n 50         # corrida rápida de prueba
-"""
-
 import argparse
 import csv
 import json
@@ -25,20 +9,15 @@ _AQUI = os.path.dirname(os.path.abspath(__file__))
 _RAIZ_PROYECTO = os.path.dirname(_AQUI)
 if _RAIZ_PROYECTO not in sys.path:
     sys.path.insert(0, _RAIZ_PROYECTO)
-# Bootstrap para poder ejecutar este script directamente
-# (python carpeta/archivo.py) sin instalar el proyecto como paquete.
 
 from busqueda.rk8_informado import RK8Informado
 
-# Rutas por defecto, siempre relativas a esta carpeta (experimentos/),
-# sin importar desde dónde se llame al script.
 _INSTANCIAS_DEFAULT = os.path.join(_AQUI, "instancias_puzzle8.json")
 _RESULTADOS_DIR = os.path.join(_AQUI, "resultados")
 _SALIDA_DEFAULT = os.path.join(_RESULTADOS_DIR, "resultados_experimento1.csv")
 
 ESTADO_META = [[1, 2, 3], [4, 5, 6], [7, 8, 0]]
 
-# Cada entrada: (etiqueta_para_csv, nombre_metodo_heuristica, peso_o_None)
 CONFIGURACIONES_HEURISTICA = [
     ("h1", "h1", None),
     ("h2", "h2", None),
@@ -76,8 +55,6 @@ def correr_experimento(instancias, salida_csv):
         escritor = csv.DictWriter(f, fieldnames=columnas)
         escritor.writeheader()
 
-        # Un agente por (heurística, peso): así la Pattern Database de H5
-        # se construye UNA sola vez y se reutiliza en las 1000 instancias.
         agentes = {
             etiqueta: construir_agente(metodo, peso)
             for etiqueta, metodo, peso in CONFIGURACIONES_HEURISTICA
@@ -102,8 +79,6 @@ def correr_experimento(instancias, salida_csv):
                         "algoritmo": algoritmo,
                         "heuristica": etiqueta,
                         "encontrado": encontrado,
-                        # "pasos" en este framework = len(camino), que
-                        # incluye el estado inicial -> movimientos = pasos-1
                         "pasos": (r["pasos"] - 1) if encontrado else None,
                         "tiempo_ms": round((t1 - t0) * 1000, 3),
                         "nodos_expandidos": r["nodos_expandidos"],
