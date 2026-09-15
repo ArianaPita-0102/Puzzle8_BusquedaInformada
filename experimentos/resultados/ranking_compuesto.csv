@@ -1,0 +1,17 @@
+algoritmo,heuristica,rango_promedio
+a_estrella,h5,1.0
+a_estrella,h4,2.0
+a_estrella,h3,3.0
+a_estrella,h6_w1.0,4.333333333333333
+a_estrella,h2,4.666666666666667
+a_estrella,h6_w0.6,6.0
+a_estrella,h6_w0.3,7.0
+a_estrella,h1,8.0
+codicioso,h5,1.0
+codicioso,h4,2.3333333333333335
+codicioso,h3,2.6666666666666665
+codicioso,h2,4.333333333333333
+codicioso,h6_w1.0,4.666666666666667
+codicioso,h6_w0.6,6.0
+codicioso,h6_w0.3,7.0
+codicioso,h1,8.0
