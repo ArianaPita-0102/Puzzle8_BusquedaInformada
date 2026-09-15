@@ -15,20 +15,21 @@ pip install numpy pandas scipy matplotlib scikit-posthocs pygame
 (o `pip install --break-system-packages ...` si tu sistema lo exige).
 
 ## 2. Cómo ejecutar — TODOS los comandos se corren desde la carpeta
+
 raíz del proyecto (esta misma carpeta, donde está este README).
 
-| Qué querés hacer | Comando |
-|---|---|
-| Ver el juego (PyGame) | `python juego/juego_puzzle.py` |
-| Correr el Experimento 1 completo (1000 instancias) | `python experimentos/experimento1.py` |
-| Correr el Experimento 1 rápido, de prueba (5 instancias) | `python experimentos/experimento1.py --n 5 --salida /tmp/prueba.csv` |
-| Regenerar las 1000 instancias (ya vienen generadas) | `python experimentos/generar_instancias.py` |
-| Correr el análisis estadístico (Friedman, post-hoc, ranking, gráficos) | `python experimentos/analisis_estadistico.py` |
-| Correr el Experimento 2 (escalabilidad N×N) | `python experimentos/escalabilidad.py` |
-| Ajustar el modelo de crecimiento (exponencial/potencial) | `python experimentos/modelar_crecimiento.py` |
-| Verificar admisibilidad de las heurísticas (181.440 estados) | `python verificacion/verificar_admisibilidad.py` |
-| Verificar consistencia de las heurísticas (483.840 aristas) | `python verificacion/verificar_consistencia.py` |
-| Ejemplo mínimo de heurísticas | `python core/demo01.py` |
+| Qué querés hacer                                                       | Comando                                                              |
+| ---------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Ver el juego (PyGame)                                                  | `python juego/juego_puzzle.py`                                       |
+| Correr el Experimento 1 completo (1000 instancias)                     | `python experimentos/experimento1.py`                                |
+| Correr el Experimento 1 rápido, de prueba (5 instancias)               | `python experimentos/experimento1.py --n 5 --salida /tmp/prueba.csv` |
+| Regenerar las 1000 instancias (ya vienen generadas)                    | `python experimentos/generar_instancias.py`                          |
+| Correr el análisis estadístico (Friedman, post-hoc, ranking, gráficos) | `python experimentos/analisis_estadistico.py`                        |
+| Correr el Experimento 2 (escalabilidad N×N)                            | `python experimentos/escalabilidad.py`                               |
+| Ajustar el modelo de crecimiento (exponencial/potencial)               | `python experimentos/modelar_crecimiento.py`                         |
+| Verificar admisibilidad de las heurísticas (181.440 estados)           | `python verificacion/verificar_admisibilidad.py`                     |
+| Verificar consistencia de las heurísticas (483.840 aristas)            | `python verificacion/verificar_consistencia.py`                      |
+| Ejemplo mínimo de heurísticas                                          | `python core/demo01.py`                                              |
 
 Todos los scripts calculan sus rutas de entrada/salida en base a su
 propia ubicación en el proyecto (no dependen de "desde dónde" los
@@ -106,13 +107,13 @@ con que tampoco es admisible).
 - El control es "clic en la ficha adyacente al vacío" — es el
   esquema estándar de cualquier puzzle deslizante; el PDF no exige
   un esquema de control específico.
-- El botón "Asistente" usa A* con Manhattan (H2) sobre el estado
+- El botón "Asistente" usa A\* con Manhattan (H2) sobre el estado
   actual del tablero, reutilizando el mismo motor de búsqueda del
   Experimento 1/2 (`busqueda/rkn_informado.py`).
 - En 5×5, si el tablero está muy revuelto (por scramble inicial +
   muchos movimientos manuales), el asistente puede alcanzar su
   límite de nodos (400.000) o de tiempo (35s) sin terminar. Esto es
-  esperado: A* con Manhattan sobre 5×5 tiene un costo que crece muy
+  esperado: A\* con Manhattan sobre 5×5 tiene un costo que crece muy
   rápido con la dificultad real del tablero (mismo fenómeno que en
   `escalabilidad.py`, donde N=5 ya no siempre se resuelve al 100%).
   El mensaje que se muestra ahora indica explícitamente si se
