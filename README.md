@@ -14,8 +14,10 @@ pip install numpy pandas scipy matplotlib scikit-posthocs pygame
 
 (o `pip install --break-system-packages ...` si tu sistema lo exige).
 
-## 2. Cómo ejecutar — TODOS los comandos se corren desde la carpeta
+Para compilar el informe también hace falta una distribución LaTeX
+(MiKTeX en Windows, TeX Live en Linux/Mac) — ver la Sección 6.
 
+## 2. Cómo ejecutar — TODOS los comandos se corren desde la carpeta
 raíz del proyecto (esta misma carpeta, donde está este README).
 
 | Qué querés hacer                                                       | Comando                                                              |
@@ -30,6 +32,7 @@ raíz del proyecto (esta misma carpeta, donde está este README).
 | Verificar admisibilidad de las heurísticas (181.440 estados)           | `python verificacion/verificar_admisibilidad.py`                     |
 | Verificar consistencia de las heurísticas (483.840 aristas)            | `python verificacion/verificar_consistencia.py`                      |
 | Ejemplo mínimo de heurísticas                                          | `python core/demo01.py`                                              |
+| Compilar el informe final en PDF                                       | ver Sección 6                                                        |
 
 Todos los scripts calculan sus rutas de entrada/salida en base a su
 propia ubicación en el proyecto (no dependen de "desde dónde" los
@@ -65,9 +68,15 @@ proyecto_8puzzle/
 │   ├── modelar_crecimiento.py       Ajuste exponencial/potencial.
 │   ├── instancias_puzzle8.json      Las 1000 instancias ya generadas.
 │   └── resultados/                  Todos los CSV/PNG/TXT generados.
-└── juego/
-    └── juego_puzzle.py         Juego en PyGame (dificultad = tamaño
-                                  del tablero, botón "Asistente" = A*).
+├── juego/
+│   ├── juego_puzzle.py         Juego en PyGame (dificultad = tamaño
+│   │                             del tablero, botón "Asistente" = A*).
+│   └── capturas/                Capturas de pantalla del juego,
+│                                 usadas por el informe (menu.png,
+│                                 tablero.png).
+└── documentos/
+    ├── informe.tex              Informe técnico final (ver Sección 6).
+    └── informe.pdf              Versión ya compilada.
 ```
 
 ## 4. Estado de los resultados incluidos
@@ -80,16 +89,18 @@ proyecto_8puzzle/
   heurística. **Siguen siendo válidos** — no hace falta volver a
   correr el Experimento 1.
 - `experimentos/resultados/resultados_escalabilidad.csv` y
-  `crecimiento_nodos_vs_n.png` corresponden a la corrida **anterior**
-  del Experimento 2 (30 instancias por tamaño, límite de 60s). El
-  script `escalabilidad.py` ya está actualizado con los parámetros
-  acordados (100 instancias por tamaño, 300s de límite), pero **hay
-  que volver a correrlo** para que estos archivos reflejen esos
-  parámetros — no se incluye ya corrido en este ZIP porque puede
-  tardar bastante según el equipo (documentá el hardware usado en el
-  informe cuando lo corras).
+  `crecimiento_nodos_vs_n.png` corresponden a la corrida **con 30
+  instancias por tamaño y límite de 60s** — esos son los números que
+  usa el informe (`documentos/informe.tex`). El script
+  `escalabilidad.py` tiene sus constantes puestas en 100
+  instancias/300s (los valores de ejemplo del PDF de la práctica),
+  pero **no se volvió a correr con esos valores** — se decidió
+  conservar los resultados originales de 30/60s por tiempo de
+  cómputo. Si en algún momento se corre con 100/300s, hay que
+  actualizar la Sección 5.2 y la Sección de escalabilidad del informe
+  con los números nuevos.
 
-## 5. Verificación de consistencia (nuevo)
+## 5. Verificación de consistencia
 
 `verificacion/verificar_consistencia.py` complementa a
 `verificar_admisibilidad.py`: reconstruye el mismo espacio de 181.440
@@ -100,9 +111,41 @@ estados (consistencia). No modifica ninguna heurística existente.
 
 Resultado esperado (ya verificado): H1, H2, H3 y H5 son consistentes
 en el 100% de los casos; H4 falla en ~8.6% de las aristas (coherente
-con que tampoco es admisible).
+con que tampoco es admisible). Estos números ya están incorporados en
+`documentos/informe.tex`.
 
-## 6. Notas sobre el juego (PyGame)
+## 6. Informe (LaTeX)
+
+`documentos/informe.tex` es el informe técnico final, con todos los
+resultados reales de `experimentos/resultados/`, de `verificacion/` y
+las capturas de `juego/capturas/`. Compilarlo:
+
+```bash
+cd documentos
+pdflatex informe.tex
+pdflatex informe.tex   # segunda pasada, para resolver referencias cruzadas
+```
+
+Requiere una distribución LaTeX (TeX Live, MiKTeX) con los paquetes
+`babel` (idioma español), `booktabs`, `float`, `caption`, `hyperref`,
+`geometry`, `graphicx` — todos estándar, vienen incluidos en
+cualquier instalación completa de TeX Live/MiKTeX.
+
+**Si usás VS Code + LaTeX Workshop y te da el error `spawn latexmk
+ENOENT` o "MiKTeX could not find the script engine 'perl'"**: la
+extensión intenta usar `latexmk` por defecto, que necesita Perl.
+Configurá una receta que use `pdflatex` directo (Settings →
+`latex-workshop.latex.recipes` / `latex-workshop.latex.tools`, dos
+pasadas de `pdflatex`), o instalá Perl (Strawberry Perl) si preferís
+mantener `latexmk`.
+
+Las imágenes se referencian directamente desde
+`experimentos/resultados/` y `juego/capturas/` (no están duplicadas
+dentro de `documentos/`), así que si se vuelven a correr los
+experimentos o se agregan capturas nuevas, el informe usa
+automáticamente las últimas versiones la próxima vez que se compile.
+
+## 7. Notas sobre el juego (PyGame)
 
 - El control es "clic en la ficha adyacente al vacío" — es el
   esquema estándar de cualquier puzzle deslizante; el PDF no exige
@@ -116,7 +159,7 @@ con que tampoco es admisible).
   esperado: A\* con Manhattan sobre 5×5 tiene un costo que crece muy
   rápido con la dificultad real del tablero (mismo fenómeno que en
   `escalabilidad.py`, donde N=5 ya no siempre se resuelve al 100%).
-  El mensaje que se muestra ahora indica explícitamente si se
-  alcanzó el límite de nodos o el de tiempo, en vez de sugerir que
-  el tablero no tiene solución (todo estado alcanzado jugando SÍ es
-  soluble, porque los movimientos preservan la solubilidad).
+  El mensaje que se muestra indica explícitamente si se alcanzó el
+  límite de nodos o el de tiempo, en vez de sugerir que el tablero no
+  tiene solución (todo estado alcanzado jugando SÍ es soluble, porque
+  los movimientos preservan la solubilidad).
