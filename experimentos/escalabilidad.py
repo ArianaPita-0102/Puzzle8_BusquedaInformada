@@ -1,25 +1,3 @@
-"""
-Experimento 2: Escalabilidad por Tamaño de Tablero.
-
-Para N = 3, 4, 5, ... genera instancias solubles y corre A* con H2
-(Manhattan generalizada — ver agente_rkn.py para por qué no se usa H5
-acá), con un presupuesto de nodos/tiempo para no reventar la memoria
-en tableros grandes. Mide nodos expandidos, tiempo y tasa de éxito, y
-determina el N máximo donde se resuelve al menos el 50% de instancias
-dentro del presupuesto.
-
-Para N >= 4, las instancias NO se generan 100% al azar (una
-permutación aleatoria del 15-puzzle puede estar a 50+ movimientos de
-la meta y ser intratable para A* + Manhattan puro). En su lugar se
-arma cada instancia con una CAMINATA ALEATORIA de longitud controlada
-desde la meta (el propio enunciado de la práctica sugiere esto como
-alternativa al chequeo de paridad). La longitud de la caminata crece
-con N para que la dificultad crezca de forma controlada.
-
-Uso (desde la carpeta raíz del proyecto):
-    python experimentos/escalabilidad.py
-"""
-
 import csv
 import os
 import random
@@ -30,8 +8,6 @@ _AQUI = os.path.dirname(os.path.abspath(__file__))
 _RAIZ_PROYECTO = os.path.dirname(_AQUI)
 if _RAIZ_PROYECTO not in sys.path:
     sys.path.insert(0, _RAIZ_PROYECTO)
-# Bootstrap para poder ejecutar este script directamente
-# (python carpeta/archivo.py) sin instalar el proyecto como paquete.
 
 from busqueda.rkn_informado import RKNInformado
 from experimentos.generar_instancias_n import estado_meta, generar_instancias_n
@@ -39,20 +15,15 @@ from experimentos.generar_instancias_n import estado_meta, generar_instancias_n
 _RESULTADOS_DIR = os.path.join(_AQUI, "resultados")
 _SALIDA_DEFAULT = os.path.join(_RESULTADOS_DIR, "resultados_escalabilidad.csv")
 
-# --- Configuración del experimento ---
 TAMANOS = [3, 4, 5, 6]
-INSTANCIAS_POR_TAMANO = 100  # como pide el PDF ("generar 100 instancias...")
-LONGITUD_CAMINATA = {3: None, 4: 40, 5: 60, 6: 80}  # None = usar generador por paridad (100% aleatorio)
+INSTANCIAS_POR_TAMANO = 100
+LONGITUD_CAMINATA = {3: None, 4: 40, 5: 60, 6: 80}
 LIMITE_NODOS = 300_000
-LIMITE_TIEMPO_S = 300  # 5 minutos por instancia, como sugiere el PDF
-UMBRAL_EXITO = 0.5  # 50%, como pide la consigna
+LIMITE_TIEMPO_S = 300
+UMBRAL_EXITO = 0.5
 
 
 def generar_por_caminata(n, longitud, rng):
-    """Arranca en la meta y aplica `longitud` movimientos válidos al
-    azar (evitando deshacer el movimiento anterior, para no perder
-    pasos yendo y viniendo). El resultado es soluble por construcción:
-    basta con invertir la misma secuencia de movimientos."""
     agente = RKNInformado(n=n, heuristica="h2")
     meta = estado_meta(n)
     agente.set_estado_meta(meta)
