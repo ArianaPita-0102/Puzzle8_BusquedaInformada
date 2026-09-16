@@ -42,9 +42,7 @@ from AgenteIA.AgenteBuscador import AgenteBuscador
 def _a_tupla(estado):
     """Convierte un estado (lista de listas, como el tablero del
     Puzzle-8) en algo hasheable para poder meterlo en un set."""
-    if isinstance(estado, list):
-        return tuple(_a_tupla(x) for x in estado)
-    return estado
+    return tuple(estado[i][j] for i in range(3) for j in range(3))
 
 
 class AgenteBuscadorInformado(AgenteBuscador):
