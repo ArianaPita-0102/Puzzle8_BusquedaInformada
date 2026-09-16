@@ -54,7 +54,7 @@ class AgenteRK8(AgenteBuscador):
             return None
         t = self.pos(e)
         if t[0] != 0:
-            aux = deepcopy(e)
+            aux = [fila[:] for fila in e] 
             aux[t[0]][t[1]] = aux[t[0] - 1][t[1]]
             aux[t[0] - 1][t[1]] = 0
             return aux
@@ -66,7 +66,7 @@ class AgenteRK8(AgenteBuscador):
             return None
         t = self.pos(e)
         if t[0] != 2:
-            aux = deepcopy(e)
+            aux = [fila[:] for fila in e] 
             aux[t[0]][t[1]] = aux[t[0] + 1][t[1]]
             aux[t[0] + 1][t[1]] = 0
             return aux
@@ -78,7 +78,7 @@ class AgenteRK8(AgenteBuscador):
             return None
         t = self.pos(e)
         if t[1] != 2:
-            aux = deepcopy(e)
+            aux = [fila[:] for fila in e] 
             aux[t[0]][t[1]] = aux[t[0]][t[1] + 1]
             aux[t[0]][t[1] + 1] = 0
             return aux
@@ -90,7 +90,7 @@ class AgenteRK8(AgenteBuscador):
             return None
         t = self.pos(e)
         if t[1] != 0:
-            aux = deepcopy(e)
+            aux = [fila[:] for fila in e] 
             aux[t[0]][t[1]] = aux[t[0]][t[1] - 1]
             aux[t[0]][t[1] - 1] = 0
             return aux
